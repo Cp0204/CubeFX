@@ -374,8 +374,10 @@ uint16_t starEffect(void) {
 
 uint16_t customShow(void) {
   WS2812FX::Segment* seg = ws2812fx.getSegment();
-  for (int i = 0; i < NUM_PIXELS; i++) {
-    ws2812fx.setPixelColor(i, colors[i]);
+  for (uint16_t i = seg->start; i <= seg->stop; i++) {
+    if (i < sizeof(colors)) {
+      ws2812fx.setPixelColor(i, colors[i]);
+    }
   }
   ws2812fx.setCycle();
   return seg->speed;
