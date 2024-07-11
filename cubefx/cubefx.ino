@@ -250,13 +250,13 @@ void handleHttpPost() {
     }
     showEffect();
     saveToEEPROM();
-    httpServer.send(200, "application/json", "{\"response\":\"Received\",\"mode\":" + String(ws2812fx.getMode()) + "}");
+    httpServer.send(200, "application/json", "{\"response\":\"Received\",\"id\":" + String(effectId) + "}");
   }
 }
 
 void handleHttpGet() {
   DynamicJsonDocument doc(1024);
-  doc["on"] = isLightOn;
+  doc["on"] = isLightOn ? 1 : 0;
   doc["id"] = effectId;
   doc["speed"] = effectSpeed;
   doc["lightness"] = lightness;
