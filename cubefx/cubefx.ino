@@ -165,10 +165,9 @@ void openHttpServer() {
   });
   // light switch
   httpServer.on("/light/mode", [] {
-    // uint8_t new_mode_id = (ws2812fx.getMode() + 1) % ws2812fx.getModeCount();
-    uint8_t new_mode_id = ws2812fx.getMode() == 75 ? 0 : (ws2812fx.getMode() + 1);
-    ws2812fx.setMode(new_mode_id);
-    httpServer.send(200, "text/plain", "Light Next Mode... " + String(new_mode_id) + ":" + ws2812fx.getModeName(new_mode_id));
+    effectId = effectId == 5 ? -73 : (effectId + 1);
+    showEffect();
+    httpServer.send(200, "text/plain", "Light Next Mode... " + String(effectId) + ":" + ws2812fx.getModeName(ws2812fx.getMode()));
   });
   // 404
   httpServer.onNotFound([] {
@@ -213,17 +212,17 @@ void showEffect() {
       ws2812fx.setMode(0);
       break;
     case 3:
-      ws2812fx.setMode(73);
+      ws2812fx.setMode(72);
       // ws2812fx.setMode(FX_MODE_CUSTOM);
       // ws2812fx.setCustomMode(waterDropEffect);
       break;
     case 4:
-      ws2812fx.setMode(74);
+      ws2812fx.setMode(73);
       // ws2812fx.setMode(FX_MODE_CUSTOM);
       // ws2812fx.setCustomMode(starEffect);
       break;
     case 5:
-      ws2812fx.setMode(75);
+      ws2812fx.setMode(74);
       // ws2812fx.setMode(FX_MODE_CUSTOM);
       // ws2812fx.setCustomMode(customShow);
       break;
@@ -303,10 +302,10 @@ void setup() {
   Serial.println("==============================");
   //
   ws2812fx.init();
-  // 自定义效果，保留72，从 73:1 开始递增
-  ws2812fx.setCustomMode(1, F("waterDropEffect"), waterDropEffect);  // 73
-  ws2812fx.setCustomMode(2, F("starEffect"), starEffect);            // 74
-  ws2812fx.setCustomMode(3, F("customShow"), customShow);            // 75
+  // 自定义效果，从 0:72 开始注册
+  ws2812fx.setCustomMode(0, F("waterDropEffect"), waterDropEffect);  // 72
+  ws2812fx.setCustomMode(1, F("starEffect"), starEffect);            // 73
+  ws2812fx.setCustomMode(2, F("customShow"), customShow);            // 74
   if (isLightOn) {
     ws2812fx.start();
     showEffect();
