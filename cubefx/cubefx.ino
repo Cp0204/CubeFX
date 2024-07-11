@@ -11,7 +11,7 @@
 #include <Update.h>
 
 /* Put your HOST SSID & Password */
-const char* host = "zimacube-esp32";
+const char* host = "CubeFX";
 const char* ssid = "ZimaCube";       // Enter SSID here
 const char* password = "homecloud";  // Enter Password here
 
@@ -30,7 +30,7 @@ static const char htmlIndex[] PROGMEM = R"(<!DOCTYPE html>
 </head>
 <body>
 <h1>CubeFX )" VERSION R"(</h1>
-<p>Hi, this is the better ZimaCube light strip system.</p>
+<p>A better ZimaCube light strip system.</p>
 <ul>
 <li><a href='/get'>Light Status</a></li>
 <li><a href='/light/switch'>Light Switch</a></li>
@@ -144,7 +144,7 @@ void openHttpServer() {
   });
   // wifi
   httpServer.on("/wifi/off", [] {
-    httpServer.send(200, "text/plain", "Turning off WiFi... Press the redlight side Button or Re-insert to ReOpen");
+    httpServer.send(200, "text/plain", "Turning off WiFi... Press the redlight side Button or Re-insert to Reopen");
     delay(1000);
     WiFi.disconnect();
     WiFi.mode(WIFI_OFF);
