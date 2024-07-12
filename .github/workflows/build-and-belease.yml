@@ -1,0 +1,121 @@
+name: Build and Release
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.ino'
+      # - '.github/workflows/**.yml'
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      ver:
+        description: Build version
+        required: false
+        type: string
+      release:
+        description: Release
+        required: true
+        type: choice
+        default: 'N'
+        options:
+          - 'Y'
+          - 'N'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version
+        id: get_ver
+        run: |
+          if [[ -n "${{ github.event.inputs.ver }}" ]]; then
+            VER="${{ github.event.inputs.ver }}"
+          elif [[ $GITHUB_REF == "refs/tags/"* ]]; then
+            VER="${GITHUB_REF/refs\/tags\//}"
+          else
+            VER="${GITHUB_SHA:0:7}"
+          fi
+          echo "Version: $VER"
+          echo "ver=$VER" >> $GITHUB_OUTPUT
+
+      - name: Replace version string
+        run: |
+          sed -i "s/#define VERSION \".*\"/#define VERSION \"${{ steps.get_ver.outputs.ver }}\"/" cubefx/cubefx.ino
+
+      - name: Install Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Install Arduino Core for ESP32
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32 --additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+
+      - name: Install Libraries
+        run: |
+          arduino-cli lib install "ArduinoJson" "OneButton" "WS2812FX"
+
+      - name: Compile Sketch
+        run: |
+          mkdir -p build
+          arduino-cli compile --fqbn esp32:esp32:esp32c3 ./cubefx --output-dir ./build
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Esptool
+        run: |
+          python -m pip install --upgrade pip
+          pip install esptool
+
+      - name: Archive Binary
+        run: |
+          # Merge bootloader, partitions, and firmware
+          esptool.py --chip ESP32-C3 merge_bin -o "build/cubefx.bin" --flash_mode dio "0x0" "build/cubefx.ino.bootloader.bin" "0x8000" "build/cubefx.ino.partitions.bin" "0x10000" "build/cubefx.ino.bin"
+          # Create release binary
+          cp build/cubefx.bin "CubeFX_flash_${{ steps.get_ver.outputs.ver }}.bin"
+          cp build/cubefx.ino.bin "CubeFX_ota_${{ steps.get_ver.outputs.ver }}.bin"
+          # Delete intermediate files
+          find ./build -type f ! -name "*.bin" -delete
+
+      - name: Save to Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build_${{ steps.get_ver.outputs.ver }}
+          path: ./build
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.release == 'Y'
+        with:
+          prerelease: false
+          tag_name: ${{ steps.get_ver.outputs.ver }}
+          generate_release_notes: true
+          files: |
+            CubeFX_ota_${{ steps.get_ver.outputs.ver }}.bin
+            CubeFX_flash_${{ steps.get_ver.outputs.ver }}.bin
+
+      - name: Upload to OSS
+        id: upload_to_oss
+        uses: tvrcgo/upload-to-oss@master
+        if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.release == 'Y'
+        with:
+          key-id: ${{ secrets.OSS_KEY_ID }}
+          key-secret: ${{ secrets.OSS_KEY_SECRET }}
+          endpoint: ${{ secrets.OSS_ENDPOINT }}
+          bucket: ${{ secrets.OSS_BUCKET }}
+          assets: |
+            build/cubefx.bin:cubefx/firmware/cubefx.bin
+            installer/index.html:cubefx/index.html
+            installer/manifest/cubefx.json:cubefx/manifest/cubefx.json
