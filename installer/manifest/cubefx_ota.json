@@ -1,0 +1,25 @@
+{
+  "name": "CubeFX",
+  "version": "dev",
+  "funding_url": "https://buymeacoffee.com/cp0204",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        {
+          "path": "../firmware/cubefx.ino.bootloader.bin",
+          "offset": 0
+        },
+        {
+          "path": "../firmware/cubefx.ino.partitions.bin",
+          "offset": 32768
+        },
+        {
+          "path": "../firmware/cubefx.ino.bin",
+          "offset": 65536
+        }
+      ]
+    }
+  ]
+}

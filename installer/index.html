@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>CubeFX installer</title>
+  <meta name="description" content="Easily allow users to install Squeezelite-ESP32 firmware on the web." />
+  <meta name="viewport" content="width=device-width" />
+  <meta name="color-scheme" content="dark light" />
+  <style>
+    body {
+      font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Ubuntu, sans-serif;
+      padding: 0;
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    .content {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 12px;
+    }
+
+    a {
+      color: #03a9f4;
+    }
+
+    .invisible {
+      visibility: hidden;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    esp-web-install-button[install-unsupported] {
+      visibility: inherit;
+    }
+
+    .content pre {
+      max-width: 100%;
+      overflow-y: scroll;
+    }
+
+    .footer {
+      margin-top: 24px;
+      border-top: 1px solid #ccc;
+      padding-top: 24px;
+      text-align: right;
+      font-size: 11px;
+      color: #aaa;
+    }
+
+    .radios li {
+      list-style: none;
+      line-height: 2em;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #333;
+        color: #fff;
+      }
+
+      a {
+        color: #58a6ff;
+      }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+  <!-- Google Tag Manager -->
+  <script>(function (w, d, s, l, i) {
+      w[l] = w[l] || []; w[l].push({
+        'gtm.start':
+          new Date().getTime(), event: 'gtm.js'
+      }); var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+          'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-MNH9CWFC');</script>
+  <!-- End Google Tag Manager -->
+</head>
+
+<body>
+  <div class="content">
+    <h1>CubeFX installer</h1>
+    <ol style='text-align:left'>
+      <li>Connect the ESP device to your computer</br>using USB or serial-to-USB adapter</li></br>
+      <li>Select the firmware variant suitable for your device</li></br>
+      <li>Hit "Install" and select the correct port or find help if <a href="https://tasmota.github.io/docs/Getting-Started/" target='_blank' style='color:#aaa;'>no device found</a></li>
+    </ol>
+    <p><b>Select Firmware:</b></p>
+    <ul class="radios">
+      <li><label><input type="radio" name="type" value="cubefx" /> CubeFX (latest)</label></li>
+    </ul>
+
+    <p class="button-row" align="center">
+      <esp-web-install-button class="invisible"></esp-web-install-button>
+    </p>
+
+    <div class="footer">
+      <a href="https://github.com/Cp0204" target="_blank">CubeFX</a> Made with ❤️ by Cp0204
+      &mdash; Installer Powered by <a href="https://esphome.github.io/esp-web-tools/" target="_blank">ESP Web Tools</a>
+    </div>
+
+    <script>
+      document.querySelectorAll('input[name="type"]').forEach(radio =>
+        radio.addEventListener("change", () => {
+          const button = document.querySelector('esp-web-install-button');
+          button.manifest = "https://" + window.location.hostname + `/cubefx/manifest/${radio.value}.json`;
+          button.classList.remove('invisible');
+          button.overrides = {
+            checkSameFirmware(manifest, improvInfo) {
+              const manifestFirmware = manifest.name.toLowerCase();
+              const deviceFirmware = improvInfo.firmware.toLowerCase();
+              return manifestFirmware.includes(deviceFirmware);
+            }
+          }
+        }
+        ));
+    </script>
+
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MNH9CWFC" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+</body>
+
+</html>
