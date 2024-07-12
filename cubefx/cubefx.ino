@@ -180,20 +180,27 @@ void openHttpServer() {
 
 // 颜色兼容rgb和hsv输入
 // https://colorpicker.me/
-uint32_t compatibleColor(JsonObject color) {
-  if (color.containsKey("r")) {
-    uint8_t r = constrain(color["r"], 0, 255);
-    uint8_t g = constrain(color["g"], 0, 255);
-    uint8_t b = constrain(color["b"], 0, 255);
-    return (uint32_t(r) << 16) | (uint32_t(g) << 8) | uint32_t(b);
-  } else if (color.containsKey("h")) {
-    uint16_t h = map(color["h"], 0, 360, 0, 65537);
-    uint8_t s = map(color["s"], 0, 100, 0, 255);
-    uint8_t v = map(color["v"], 0, 100, 0, 255);
-    return strip.gamma32(strip.ColorHSV(h, s, v));
-  } else {
-    return 0;
+uint32_t compatibleColor(JsonVariant item) {
+  if (item.is<JsonObject>()) {
+    JsonObject color = item.as<JsonObject>();
+    if (color.containsKey("r")) {
+      uint8_t r = constrain(color["r"], 0, 255);
+      uint8_t g = constrain(color["g"], 0, 255);
+      uint8_t b = constrain(color["b"], 0, 255);
+      return (uint32_t(r) << 16) | (uint32_t(g) << 8) | uint32_t(b);
+    } else if (color.containsKey("h")) {
+      uint16_t h = map(color["h"], 0, 360, 0, 65537);
+      uint8_t s = map(color["s"], 0, 100, 0, 255);
+      uint8_t v = map(color["v"], 0, 100, 0, 255);
+      return strip.gamma32(strip.ColorHSV(h, s, v));
+    }
+  } else if (item.is<String>()) {
+    String hexColor = item.as<String>();
+    if (hexColor.length() == 6) {
+      return strtol(hexColor.c_str(), nullptr, 16);
+    }
   }
+  return 0;
 }
 
 void showEffect() {
