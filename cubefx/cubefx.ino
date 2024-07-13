@@ -204,7 +204,11 @@ uint32_t compatibleColor(JsonVariant item) {
 }
 
 void showEffect() {
-  ws2812fx.resume();
+  if (!isLightOn) {
+    ws2812fx.stop();
+  } else if (!ws2812fx.isRunning()) {
+    ws2812fx.start();
+  }
   ws2812fx.setSpeed(map(255 - effectSpeed, 0, 255, 0, 5000));  // 在 ws2812fx 速度代表帧 ms 延迟，越大越慢
   ws2812fx.setBrightness(lightness);
   ws2812fx.setColor(colors[0]);
@@ -248,6 +252,7 @@ void handleHttpPost() {
     Serial.println(error.c_str());
     httpServer.send(400, "text/plain", "Bad Request");
   } else {
+    isLightOn = doc.containsKey("on") ? (doc["on"] == 0 ? 0 : 1) : 1;
     effectId = doc["id"];
     effectSpeed = constrain(doc["speed"], 0, 255);
     lightness = constrain(doc["lightness"], 0, 254) + 1;
