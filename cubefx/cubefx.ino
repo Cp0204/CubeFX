@@ -410,7 +410,7 @@ void setupOTA(const String& path) {
       if (Update.hasError()) {
         httpServer.send(200, "text/plain", "FAIL");
       } else {
-        httpServer.send(200, "text/html", "<META http-equiv=\"refresh\" content=\"15;URL=/\">Update SUCCESS! Rebooting...");
+        httpServer.send(200, "text/html", "<META http-equiv=\"refresh\" content=\"5;URL=/\">Update SUCCESS! Rebooting...");
         delay(1000);
         ESP.restart();
       }
