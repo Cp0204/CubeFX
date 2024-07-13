@@ -38,7 +38,7 @@ static const char htmlIndex[] PROGMEM = R"(<!DOCTYPE html>
 <li><a href='/wifi/off'>WiFiAP TurnOff</a></li>
 <li><a href='/update'>Firmware Update</a></li>
 </ul>
-<p>Developed by: <a href='https://github.com/Cp0204/CubeFX'>Cp0204</a></p>
+<i>Made with ❤️ by Cp0204</i>
 </body>
 </html>)";
 
