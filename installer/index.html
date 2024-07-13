@@ -116,6 +116,9 @@
         const manifest = "https://" + window.location.hostname + `/cubefx/manifest/${filename}.json`;
         console.log("Selected manifest:", manifest);
         button.manifest = manifest;
+        if(filename == "esp_deep_sleep") {
+          alert("WARNING! After flashing, the ESP will go into deep sleep, and you will need to hold the BOOT button while powering it on to connect to the serial port again.");
+        }
       }
     </script>
 
