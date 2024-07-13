@@ -2,7 +2,7 @@
 
 #include <ArduinoJson.h>
 #include <EEPROM.h>
-#include <OneButton.h>
+#include <OneButton.h> // https://github.com/mathertel/OneButton
 #include <WS2812FX.h>  // https://github.com/kitesurfer1404/WS2812FX
 #include <WebServer.h>
 #include <WiFi.h>
@@ -142,7 +142,7 @@ void openHttpServer() {
   httpServer.on("/version", HTTP_GET, [] {
     httpServer.send(200, "application/json", "{\"version\":\"" + String(VERSION) + "\"}");
   });
-  // wifi
+  // wifi off
   httpServer.on("/wifi/off", [] {
     httpServer.send(200, "text/plain", "Turning off WiFi... Press the redlight side Button or Re-insert to Reopen");
     delay(1000);
@@ -163,7 +163,7 @@ void openHttpServer() {
     EEPROM.put(EEPROM_ADDR_IS_LIGHT_ON, isLightOn);
     EEPROM.commit();
   });
-  // light switch
+  // light mode
   httpServer.on("/light/mode", [] {
     effectId = effectId == 5 ? -73 : (effectId + 1);
     showEffect();
@@ -178,7 +178,7 @@ void openHttpServer() {
   Serial.printf("HTTPServer Started: http://%s/update\n", WiFi.softAPIP().toString());
 }
 
-// 颜色兼容rgb和hsv输入
+// 颜色兼容 rgb hsv hex 输入
 // https://colorpicker.me/
 uint32_t compatibleColor(JsonVariant item) {
   if (item.is<JsonObject>()) {
@@ -296,13 +296,15 @@ void handleBtnClick() {
   openAP();
 }
 
+// ==============================================================
+
 void setup() {
   // Init IO
   pinMode(BOARD_LED, OUTPUT);
   digitalWrite(BOARD_LED, HIGH);
-  //
+  // Output startup parameter
   Serial.begin(15200);
-  Serial.println("Initial the ZimaCube light effect system!");
+  Serial.println("Initial CubeFX");
   Serial.println("==============================");
   loadFromEEPROM();
   Serial.printf("isLightOn: %d\n", isLightOn);
@@ -314,19 +316,16 @@ void setup() {
     Serial.printf("%06X%s", colors[i], (i < NUM_PIXELS - 1) ? ", " : "\n");
   }
   Serial.println("==============================");
-  //
+  // WS2812FX
   ws2812fx.init();
   // 自定义效果，从 0:72 开始注册
   ws2812fx.setCustomMode(0, F("waterDropEffect"), waterDropEffect);  // 72
   ws2812fx.setCustomMode(1, F("starEffect"), starEffect);            // 73
   ws2812fx.setCustomMode(2, F("customShow"), customShow);            // 74
-  if (isLightOn) {
-    ws2812fx.start();
-    showEffect();
-  }
-  //
+  showEffect();
+  // OneButton
   button.attachClick(handleBtnClick);
-  //
+  // WebServer
   openAP();
   openHttpServer();
 }
@@ -337,6 +336,7 @@ void loop() {
   button.tick();
 }
 
+// ==============================================================
 // ===== 自定义效果 =====
 
 // 水滴效果，从中间扩散
