@@ -39,6 +39,7 @@ Connect to the hotspot and send a POST request to http://172.16.1.1/post with th
 
 ```json
 {
+    "on": 1,
     "id": 5,
     "speed": 128,
     "lightness": 255,
@@ -58,6 +59,7 @@ Connect to the hotspot and send a POST request to http://172.16.1.1/post with th
 }
 ```
 
+* **on:** Light switch, optional, [0,1]
 * **id:** Lighting effect, currently valid range is [-74,5]
 * **speed:** Effect speed, range [0,255]
 * **lightness:** Brightness, range [0,255]
