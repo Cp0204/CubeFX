@@ -118,4 +118,4 @@ jobs:
           assets: |
             build/cubefx.bin:cubefx/firmware/cubefx.bin
             installer/index.html:cubefx/index.html
-            installer/manifest/cubefx.json:cubefx/manifest/cubefx.json
+            installer/manifest/**:cubefx/manifest/
