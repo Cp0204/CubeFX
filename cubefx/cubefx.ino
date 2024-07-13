@@ -210,7 +210,7 @@ void showEffect() {
     ws2812fx.start();
   }
   ws2812fx.setSpeed(map(255 - effectSpeed, 0, 255, 0, 5000));  // 在 ws2812fx 速度代表帧 ms 延迟，越大越慢
-  ws2812fx.setBrightness(lightness);
+  ws2812fx.setBrightness(constrain(lightness + 1, 0, 255));    // ws2812fx的不明bug，当亮度=0时似乎=255
   ws2812fx.setColor(colors[0]);
   switch (effectId) {
     case 0:
@@ -253,12 +253,14 @@ void handleHttpPost() {
     httpServer.send(400, "text/plain", "Bad Request");
   } else {
     isLightOn = doc.containsKey("on") ? (doc["on"] == 0 ? 0 : 1) : 1;
-    effectId = doc["id"];
-    effectSpeed = constrain(doc["speed"], 0, 255);
-    lightness = constrain(doc["lightness"], 0, 254) + 1;
-    JsonArray data = doc["data"];
-    for (int i = 0; i < NUM_PIXELS; i++) {
-      colors[i] = compatibleColor(data[i]);
+    effectId = doc.containsKey("id") ? doc["id"] : effectId;
+    effectSpeed = doc.containsKey("speed") ? constrain(doc["speed"], 0, 255) : effectSpeed;
+    lightness = doc.containsKey("lightness") ? constrain(doc["lightness"], 0, 255) : lightness;
+    if (doc.containsKey("data")) {
+      JsonArray data = doc["data"];
+      for (int i = 0; i < NUM_PIXELS; i++) {
+        colors[i] = compatibleColor(data[i]);
+      }
     }
     showEffect();
     saveToEEPROM();
@@ -366,7 +368,7 @@ uint16_t waterDropEffect(void) {
   }
 }
 
-// 星空效果，随机闪缩，然后渐暗
+// 星空效果，随机闪烁，然后渐暗
 uint16_t starEffect(void) {
   WS2812FX::Segment* seg = ws2812fx.getSegment();
   int seglen = seg->stop - seg->start + 1;
