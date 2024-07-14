@@ -7,7 +7,9 @@
   <meta name='viewport' content='width=device-width,initial-scale=1' />
   <style>
     .colorPicker {
-      margin: 5px;
+      height: 25px;
+      width: 25px;
+      margin: 2px;
       cursor: pointer;
     }
   </style>
@@ -16,108 +18,87 @@
 <body>
   <h1>CubeFX Panel</h1>
   <form id="ledForm">
-    <div>
-      <label for="on">on:</label>
-      <input type="checkbox" id="on" name="on">
-    </div>
-    <div>
-      <label for="id">id:</label>
-      <select id="id" name="id"></select>
-    </div>
-    <div>
-      <label for="speed">speed:</label>
-      <input type="range" id="speed" name="speed" min="0" max="255" value="150"><span id="speedValue">150</span>
-    </div>
-    <div>
-      <label for="lightness">lightness:</label>
-      <input type="range" id="lightness" name="lightness" min="0" max="255" value="255"><span id="lightnessValue">255</span>
-    </div>
-    <div>
-      <label for="colorPickers">data:</label>
-      <div id="colorPickers"></div>
-    </div>
+    <p>on:&nbsp;<input type="checkbox" id="onCheck"></p>
+    <p>id:&nbsp;<select id="idSel"></select>&nbsp;<button type="button" id="btnNext">QuickNext</button></p>
+    <p>speed:&nbsp;<input type="range" id="speedRng" min="0" max="255" value="150">&nbsp;<span id="speedVal">150</span></p>
+    <p>lightness:&nbsp;<input type="range" id="lightRng" min="0" max="255" value="255">&nbsp;<span id="lightVal">255</span></p>
+    <p>data:&nbsp;<span id="colorCtr"></span></p>
     <button type="submit">Submit</button>
   </form>
   <pre id="log"></pre>
   <i>Made with ❤️ by Cp0204</i>
-
   <script>
-    const form = document.getElementById('ledForm');
-    const onCheckbox = document.getElementById('on');
-    const idSelect = document.getElementById('id');
-    const speedSlider = document.getElementById('speed');
-    const speedValue = document.getElementById('speedValue');
-    const lightnessSlider = document.getElementById('lightness');
-    const lightnessValue = document.getElementById('lightnessValue');
-    const colorPickersContainer = document.getElementById('colorPickers');
-    const logContainer = document.getElementById('log');
-    const apiServer = 'http://172.16.1.1';
+    const form = document.getElementById('ledForm'),
+      onCheck = document.getElementById('onCheck'),
+      idSel = document.getElementById('idSel'),
+      btnNext = document.getElementById('btnNext'),
+      speedRng = document.getElementById('speedRng'),
+      speedVal = document.getElementById('speedVal'),
+      lightRng = document.getElementById('lightRng'),
+      lightVal = document.getElementById('lightVal'),
+      colorCtr = document.getElementById('colorCtr'),
+      log = document.getElementById('log'),
+      apiServer = 'http://172.16.1.1';
+
     for (let i = 0; i < 13; i++) {
-      const colorPicker = document.createElement('input');
-      colorPicker.type = 'color';
-      colorPicker.classList.add('colorPicker');
-      colorPicker.value = '#FFFFFF';
-      colorPickersContainer.appendChild(colorPicker);
+      const picker = document.createElement('input');
+      picker.type = 'color';
+      picker.classList.add('colorPicker');
+      picker.value = '#FFFFFF';
+      colorCtr.appendChild(picker);
     }
-    for (let i = 5; i > -72; i--) {
-      const option = document.createElement('option');
-      option.text = i;
-      option.selected = i === 5 ? true : false;
-      idSelect.appendChild(option);
+    for (let i = 5; i >= -71; i--) {
+      const opt = document.createElement('option');
+      opt.text = i;
+      opt.selected = i === 5;
+      idSel.appendChild(opt);
     }
-    speedSlider.addEventListener('input', () => {
-      speedValue.textContent = speedSlider.value;
+
+    speedRng.addEventListener('input', () => speedVal.textContent = speedRng.value);
+    lightRng.addEventListener('input', () => lightVal.textContent = lightRng.value);
+
+    btnNext.addEventListener('click', () => {
+      let currentId = parseInt(idSel.value);
+      idSel.value = currentId == 5 ? -71 : currentId + 1;
+      form.dispatchEvent(new Event('submit'));
     });
-    lightnessSlider.addEventListener('input', () => {
-      lightnessValue.textContent = lightnessSlider.value;
-    });
+
     form.addEventListener('submit', (event) => {
       event.preventDefault();
-      const colorData = Array.from(document.querySelectorAll('.colorPicker')).map(
-        (colorPicker) => colorPicker.value.replace('#', '')
-      );
       const data = {
-        on: onCheckbox.checked ? 1 : 0,
-        id: parseInt(idSelect.value),
-        speed: parseInt(speedSlider.value),
-        lightness: parseInt(lightnessSlider.value),
-        data: colorData,
+        on: onCheck.checked ? 1 : 0,
+        id: parseInt(idSel.value),
+        speed: parseInt(speedRng.value),
+        lightness: parseInt(lightRng.value),
+        data: Array.from(document.querySelectorAll('.colorPicker')).map(picker => picker.value.replace('#', ''))
       };
-      const options = {
+      fetch(apiServer + '/post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
-      };
-      fetch(apiServer + '/post', options)
+      })
         .then(response => response.json())
-        .then(response => {
-          logContainer.textContent += "\n/post Success " + JSON.stringify(response);;
-        })
-        .catch(err => {
-          console.error(err);
-          logContainer.textContent += '\nError: ' + err;
-        });
+        .then(response => log.textContent += "\n/post Success " + JSON.stringify(response))
+        .catch(err => log.textContent += '\nError: ' + err);
     });
+
     window.addEventListener('load', () => {
       fetch(apiServer + '/get')
         .then(response => response.json())
         .then(data => {
-          onCheckbox.checked = data.on === 1;
-          idSelect.value = data.id;
-          speedSlider.value = data.speed;
-          speedValue.textContent = data.speed;
-          lightnessSlider.value = data.lightness;
-          lightnessValue.textContent = data.lightness;
+          onCheck.checked = data.on === 1;
+          idSel.value = data.id;
+          speedRng.value = data.speed;
+          speedVal.textContent = data.speed;
+          lightRng.value = data.lightness;
+          lightVal.textContent = data.lightness;
           const colorPickers = document.querySelectorAll('.colorPicker');
           for (let i = 0; i < data.data.length; i++) {
             colorPickers[i].value = '#' + data.data[i];
           }
-          logContainer.textContent += '\n/get Success';
+          log.textContent += '\n/get Success';
         })
-        .catch(err => {
-          console.error(err);
-          logContainer.textContent += '\nError: ' + err;
-        });
+        .catch(err => log.textContent += '\nError: ' + err);
     });
   </script>
 </body>
