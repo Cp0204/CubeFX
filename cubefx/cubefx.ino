@@ -2,8 +2,8 @@
 
 #include <ArduinoJson.h>
 #include <EEPROM.h>
-#include <OneButton.h> // https://github.com/mathertel/OneButton
-#include <WS2812FX.h>  // https://github.com/kitesurfer1404/WS2812FX
+#include <OneButton.h>  // https://github.com/mathertel/OneButton
+#include <WS2812FX.h>   // https://github.com/kitesurfer1404/WS2812FX
 #include <WebServer.h>
 #include <WiFi.h>
 // For OTA
@@ -32,6 +32,7 @@ static const char htmlIndex[] PROGMEM = R"(<!DOCTYPE html>
 <h1>CubeFX )" VERSION R"(</h1>
 <p>A better ZimaCube light strip system.</p>
 <ul>
+<li><a href='/post'>Light Panel</a></li>
 <li><a href='/get'>Light Status</a></li>
 <li><a href='/light/switch'>Light Switch</a></li>
 <li><a href='/light/mode'>Light NextDemo</a></li>
@@ -55,6 +56,25 @@ Firmware: <input type='file' accept='.bin,.bin.gz' name='firmware'> <input type=
 </form>
 </body>
 </html>)";
+
+static const char htmlPanel[] PROGMEM = R"(
+<!DOCTYPE html><html><head><title>CubeFX Panel</title><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'/>
+<style>.colorPicker{margin:5px;cursor:pointer}</style></head><body><h1>CubeFX Panel</h1><form id="ledForm"><div><label for="on">on:</label><input type="checkbox"id="on"name="on">
+</div><div><label for="id">id:</label><select id="id"name="id"></select></div><div><label for="speed">speed:</label><input type="range"id="speed"name="speed"min="0"max="255"value="150"><span id="speedValue">150</span></div><div>
+<label for="lightness">lightness:</label><input type="range"id="lightness"name="lightness"min="0"max="255"value="255"><span id="lightnessValue">255</span></div><div><label for="colorPickers">data:</label><div id="colorPickers"></div></div>
+<button type="submit">Submit</button></form><pre id="log"></pre><i>Made with ❤️ by Cp0204</i><script>const form=document.getElementById('ledForm');const onCheckbox=document.getElementById('on');const idSelect=document.getElementById('id');
+const speedSlider=document.getElementById('speed');const speedValue=document.getElementById('speedValue');const lightnessSlider=document.getElementById('lightness');const lightnessValue=document.getElementById('lightnessValue');
+const colorPickersContainer=document.getElementById('colorPickers');const logContainer=document.getElementById('log');const apiServer='http://172.16.1.1';for(let i=0;i<13;i++){const colorPicker=document.createElement('input');
+colorPicker.type='color';colorPicker.classList.add('colorPicker');colorPicker.value='#FFFFFF';colorPickersContainer.appendChild(colorPicker)}for(let i=5;i>-72;i--){const option=document.createElement('option');option.text=i;
+option.selected=i===5?true:false;idSelect.appendChild(option)}speedSlider.addEventListener('input',()=>{speedValue.textContent=speedSlider.value});lightnessSlider.addEventListener('input',()=>{lightnessValue.textContent=lightnessSlider.value});
+form.addEventListener('submit',(event)=>{event.preventDefault();const colorData=Array.from(document.querySelectorAll('.colorPicker')).map((colorPicker)=>colorPicker.value.replace('#',''));
+const data={on:onCheckbox.checked?1:0,id:parseInt(idSelect.value),speed:parseInt(speedSlider.value),lightness:parseInt(lightnessSlider.value),data:colorData,};
+const options={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)};
+fetch(apiServer+'/post',options).then(response=>response.json()).then(response=>{logContainer.textContent+="\n/post Success "+JSON.stringify(response)}).catch(err=>{console.error(err);logContainer.textContent+='\nError: '+err})});
+window.addEventListener('load',()=>{fetch(apiServer+'/get').then(response=>response.json()).then(data=>{onCheckbox.checked=data.on===1;idSelect.value=data.id;speedSlider.value=data.speed;
+speedValue.textContent=data.speed;lightnessSlider.value=data.lightness;lightnessValue.textContent=data.lightness;const colorPickers=document.querySelectorAll('.colorPicker');
+for(let i=0;i<data.data.length;i++){colorPickers[i].value='#'+data.data[i]}logContainer.textContent+='\n/get Success'}).catch(err=>{console.error(err);logContainer.textContent+='\nError: '+err})});</script></body></html>
+)";
 
 DynamicJsonDocument doc(1024);
 
@@ -136,6 +156,17 @@ void openHttpServer() {
   });
   // light post
   httpServer.on("/post", HTTP_POST, handleHttpPost);
+  // handle preflight
+  httpServer.on("/post", HTTP_OPTIONS, [] {
+    httpServer.sendHeader("Access-Control-Allow-Origin", "*");
+    httpServer.sendHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    httpServer.sendHeader("Access-Control-Allow-Headers", "*");
+    httpServer.send(204);
+  });
+  // light show panel
+  httpServer.on("/post", HTTP_GET, []() {
+    httpServer.send(200, "text/html", htmlPanel);
+  });
   // light get
   httpServer.on("/get", HTTP_GET, handleHttpGet);
   // version
@@ -165,7 +196,7 @@ void openHttpServer() {
   });
   // light mode
   httpServer.on("/light/mode", [] {
-    effectId = effectId == 5 ? -73 : (effectId + 1);
+    effectId = effectId == 5 ? -71 : (effectId + 1);
     showEffect();
     httpServer.send(200, "text/plain", "Light Next Mode... " + String(effectId) + ":" + ws2812fx.getModeName(ws2812fx.getMode()));
   });
@@ -264,6 +295,9 @@ void handleHttpPost() {
     }
     showEffect();
     saveToEEPROM();
+    httpServer.sendHeader("Access-Control-Allow-Origin", "*");
+    httpServer.sendHeader("Access-Control-Allow-Headers", "*");
+    httpServer.sendHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
     httpServer.send(200, "application/json", "{\"response\":\"Received\",\"id\":" + String(effectId) + "}");
   }
 }
@@ -286,6 +320,9 @@ void handleHttpGet() {
   }
   String jsonResponse;
   serializeJson(doc, jsonResponse);
+  httpServer.sendHeader("Access-Control-Allow-Origin", "*");
+  httpServer.sendHeader("Access-Control-Allow-Headers", "*");
+  httpServer.sendHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
   httpServer.send(200, "application/json", jsonResponse);
 }
 
