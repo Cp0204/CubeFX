@@ -21,7 +21,7 @@ CubeFX 是一个为 ZimaCube 设计的**第三方**开源灯光控制系统，�
 
 ### 方式一：OTA更新
 
-* 在 [Releases](/releases) 页面下载 `CubeFX_ota_xxx.bin` 固件
+* 在 [Releases](https://github.com/Cp0204/CubeFX/releases/latest) 页面下载 `CubeFX_ota_xxx.bin` 固件
 * 连接 `ZimaCube` 热点，默认密码 `homecloud`
 * 浏览器访问 http://172.16.1.1
 * 将 `.bin` 文件上传到 ESP32-C3 开发板
@@ -35,7 +35,9 @@ CubeFX 是一个为 ZimaCube 设计的**第三方**开源灯光控制系统，�
 
 ### 自定义灯珠颜色
 
-连接热点 POST 数据到 http://172.16.1.1/post ，数据格式如下：
+连接热点打开 http://172.16.1.1/post
+
+或使用其它软件 POST 数据到 `http://172.16.1.1/post` ，数据格式如下：
 
 ```json
 {
@@ -60,7 +62,7 @@ CubeFX 是一个为 ZimaCube 设计的**第三方**开源灯光控制系统，�
 ```
 
 * **on:** 灯光开关，可选，[0,1]
-* **id:** 灯光效果，目前的有效范围是 [-74,5]
+* **id:** 灯光效果，目前的有效范围是 [-71,5]
 * **speed:** 效果速度，范围 [0,255]
 * **lightness:** 亮度，范围 [0,255]
 * **data:** 支持 RGB, HSV, HEX 三种颜色提交格式，其中 HEX 为 6 位十六进制颜色值。HSV 计划淘汰，请使用 RGB 或 HEX 格式。

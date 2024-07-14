@@ -21,7 +21,7 @@ CubeFX is a **third-party** open-source lighting control system designed for the
 
 ### Method 1: OTA Update
 
-* Download the `CubeFX_ota_xxx.bin` firmware from the [Releases](/releases) page
+* Download the `CubeFX_ota_xxx.bin` firmware from the [Releases](https://github.com/Cp0204/CubeFX/releases/latest) page
 * Connect to the `ZimaCube` hotspot, the default password is `homecloud`
 * Visit http://172.16.1.1 in your browser
 * Upload the `.bin` file to the ESP32-C3 development board
@@ -35,7 +35,9 @@ CubeFX is a **third-party** open-source lighting control system designed for the
 
 ### Customizing LED Colors
 
-Connect to the hotspot and send a POST request to http://172.16.1.1/post with the following data format:
+Connect to the hotspot and open http://172.16.1.1/post
+
+Or use other software to POST data to `http://172.16.1.1/post` in the following format:
 
 ```json
 {
@@ -60,7 +62,7 @@ Connect to the hotspot and send a POST request to http://172.16.1.1/post with th
 ```
 
 * **on:** Light switch, optional, [0,1]
-* **id:** Lighting effect, currently valid range is [-74,5]
+* **id:** Lighting effect, currently valid range is [-71,5]
 * **speed:** Effect speed, range [0,255]
 * **lightness:** Brightness, range [0,255]
 * **data:** Supports RGB, HSV, and HEX color input formats, where HEX is a 6-digit hexadecimal color value. HSV format is planned for deprecation, please use RGB or HEX format.
