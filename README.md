@@ -11,7 +11,7 @@ CubeFX is a **third-party** open-source lighting control system designed for the
 
 * [x] **Multiple Lighting Effects:** Built-in various lighting effects with support for custom effects
 * [x] **Control Interface:** Easy control through a web page
-* [x] **Hotspot Toggle:** Ability to turn off the WiFi hotspot and reopen it with a button or power cycle
+* [x] **AP Toggle:** Ability to turn off the WiFi AP and reopen it with a button or power cycle
 * [x] **OTA Update Support:** Update firmware wirelessly without disassembly
 * [x] **Multiple Color Formats:** Compatible with RGB, HSV, and HEX color input formats
 * [x] **Power-off Memory:** Automatically saves lighting settings to EEPROM, preserving them after power loss
@@ -22,7 +22,7 @@ CubeFX is a **third-party** open-source lighting control system designed for the
 ### Method 1: OTA Update
 
 * Download the `CubeFX_ota_xxx.bin` firmware from the [Releases](https://github.com/Cp0204/CubeFX/releases/latest) page
-* Connect to the `ZimaCube` hotspot, the default password is `homecloud`
+* Connect to the `ZimaCube` AP, the default password is `homecloud`
 * Visit http://172.16.1.1 in your browser
 * Upload the `.bin` file to the ESP32-C3 development board
 
@@ -35,7 +35,7 @@ CubeFX is a **third-party** open-source lighting control system designed for the
 
 ### Customizing LED Colors
 
-Connect to the hotspot and open http://172.16.1.1/post
+Connect to the AP and open http://172.16.1.1/post
 
 Or use other software to POST data to `http://172.16.1.1/post` in the following format:
 
@@ -77,4 +77,4 @@ Enjoyed the project? Consider buying me a coffee - it helps me keep going!
 ## Thank
 
 - [kitesurfer1404/WS2812FX](https://github.com/kitesurfer1404/WS2812FX)
-- [IceWhaleTech/esp32](https://github.com/IceWhaleTech/esp32)
+- [IceWhaleTech](https://github.com/IceWhaleTech)

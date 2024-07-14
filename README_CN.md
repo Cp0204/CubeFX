@@ -80,4 +80,4 @@ Enjoyed the project? Consider buying me a coffee - it helps me keep going!
 ## Thank
 
 - [kitesurfer1404/WS2812FX](https://github.com/kitesurfer1404/WS2812FX)
-- [IceWhaleTech/esp32](https://github.com/IceWhaleTech/esp32)
+- [IceWhaleTech](https://github.com/IceWhaleTech)

@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <title>CubeFX installer</title>
-  <meta name="description" content="Easily allow users to install Squeezelite-ESP32 firmware on the web." />
+  <meta name="description" content="Easily allow users to install CubeFX firmware on the web." />
   <meta name="viewport" content="width=device-width" />
   <meta name="color-scheme" content="dark light" />
   <style>
@@ -72,13 +72,15 @@
   <div class="content">
     <h1>CubeFX installer</h1>
     <ol style='text-align:left'>
-      <li>Connect the ESP device to your computer</br>using USB or serial-to-USB adapter</li>
+      <li>Connect the ESP device to your computer using Type-C cable</li>
       </br>
-      <li>Select the firmware variant suitable for your device</li>
+      <li>Select the appropriate firmware variant for your device</li>
       </br>
-      <li>Hit "Connect" and select the correct port or find help if <a href="https://tasmota.github.io/docs/Getting-Started/" target='_blank' style='color:#aaa;'>no device found</a></li>
+      <li>Click "Connect" and select the correct port. If <a href="https://tasmota.github.io/docs/Getting-Started/" target='_blank' style='color:#aaa;'>no device is found</a></li>
       </br>
-      <li>Give me a star on <a href="https://github.com/Cp0204/CubeFX" target="_blank">CubeFX</a> so I know someone is using it!</a></li>
+      <li>Connect to the <b>ZimaCube</b> AP using the password <b>homecloud</b>,<br> and open <a href="http://172.16.1.1" target='_blank' style='color:#aaa;'>172.16.1.1</a> to customize your color!</li>
+      </br>
+      <li>If you enjoy using <a href="https://github.com/Cp0204/CubeFX" target="_blank">CubeFX</a> please consider leaving a star!</a></li>
     </ol>
     <p><b>Select Firmware:</b></p>
     <div align="center">
@@ -116,7 +118,7 @@
         const manifest = "https://" + window.location.hostname + `/cubefx/manifest/${filename}.json`;
         console.log("Selected manifest:", manifest);
         button.manifest = manifest;
-        if(filename == "esp_deep_sleep") {
+        if (filename == "esp_deep_sleep") {
           alert("WARNING! After flashing, the ESP will go into deep sleep, and you will need to hold the BOOT button while powering it on to connect to the serial port again.");
         }
       }
