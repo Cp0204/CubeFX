@@ -6,6 +6,7 @@ CubeFX is a **third-party** open-source lighting control system designed for the
 
 [![GitHub release](https://img.shields.io/github/v/release/Cp0204/CubeFX.svg)](https://github.com/Cp0204/CubeFX/releases/latest) [![GitHub license](https://img.shields.io/github/license/Cp0204/CubeFX.svg)](https://github.com/Cp0204/CubeFX/blob/main/LICENSE)
 
+[![Demo](https://img.youtube.com/vi/K5UVmzoG0bY/0.jpg)](https://www.youtube.com/watch?v=K5UVmzoG0bY)
 
 ## Features
 
