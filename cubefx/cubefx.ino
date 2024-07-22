@@ -38,7 +38,7 @@ static const char htmlIndex[] PROGMEM = R"(<!DOCTYPE html>
 <li><a href='/post'>Light Panel</a></li>
 <li><a href='/get'>Light Status</a></li>
 <li><a href='/light/switch'>Light Switch</a></li>
-<li><a href='/light/mode'>Light NextDemo</a></li>
+<li><a href='/light/demo'>Light NextDemo</a></li>
 <li><a href='/wifi/off'>WiFiAP TurnOff</a></li>
 <li><a href='/update'>Firmware Update</a></li>
 </ul>
@@ -191,7 +191,7 @@ void openHttpServer() {
   });
   // wifi off
   httpServer.on("/wifi/off", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/plain", "Turning off WiFi... Re-insert the 7th-Bay to Reopen");
+    request->send(200, "application/json", "{\"action\":\"" + request->url() + "\",\"message\":\"Turning off WiFi... Re-insert the 7th-Bay to Reopen\"}");
     delay(1000);
     WiFi.disconnect();
     WiFi.mode(WIFI_OFF);
@@ -199,22 +199,21 @@ void openHttpServer() {
   // light switch
   httpServer.on("/light/switch", HTTP_GET, [](AsyncWebServerRequest *request) {
     if (ws2812fx.isRunning()) {
-      request->send(200, "text/plain", "Switch Light... Now OFF");
       isLightOn = false;
       ws2812fx.stop();
     } else {
-      request->send(200, "text/plain", "Switch Light... Now ON");
       isLightOn = true;
       ws2812fx.start();
     }
+    request->send(200, "application/json", "{\"action\":\"" + request->url() + "\",\"on\":" + String(isLightOn) + "}");
     EEPROM.put(EEPROM_ADDR_IS_LIGHT_ON, isLightOn);
     EEPROM.commit();
   });
-  // light mode
-  httpServer.on("/light/mode", HTTP_GET, [](AsyncWebServerRequest *request) {
+  // light demo
+  httpServer.on("/light/demo", HTTP_GET, [](AsyncWebServerRequest *request) {
     effectId = effectId == 5 ? -71 : (effectId + 1);
     showEffect();
-    request->send(200, "text/plain", "Light Next Mode... " + String(effectId) + ":" + ws2812fx.getModeName(ws2812fx.getMode()));
+    request->send(200, "application/json", "{\"action\":\"" + request->url() + "\",\"message\":\"Quick Next Demo... " + String(effectId) + ":" + ws2812fx.getModeName(ws2812fx.getMode()) + "\"}");
   });
   // 404
   httpServer.onNotFound([](AsyncWebServerRequest *request) {
