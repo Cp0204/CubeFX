@@ -36,12 +36,15 @@ CubeFX is a **third-party open-source lighting control system** designed for the
 * Follow the instructions to update the firmware
 
 
-### Customizing LED Colors
+### Customizing Effects
 
 Connect to the AP and open http://172.16.1.1/post
 
 > [!TIP]
+>
 > It is recommended to use a cell phone to connect as close as possible to the 7th-Bay, because its signal is really weak.
+>
+> If you just can't connect, you can also press **BOOT** key to "touch the blind box" and get a random set of effects. 🎲🎊
 
 Or use other program to **POST** data to `http://172.16.1.1/post` in the following format:
 
@@ -68,7 +71,7 @@ Or use other program to **POST** data to `http://172.16.1.1/post` in the followi
 ```
 
 * **on:** Light switch, optional, [0,1]
-* **id:** Lighting effect, currently valid range is [-71,5]
+* **id:** Lighting effect, currently valid range is [-71,5]. Each bead color can be customized when id=5, other effects allow a base color to be defined (but not every effect is supported).
 * **speed:** Effect speed, range [0,255]
 * **lightness:** Brightness, range [0,255]
 * **data:** Supports RGB, HSV, and HEX color input formats, where HEX is a 6-digit hexadecimal color value. HSV format is planned for deprecation, please use RGB or HEX format.
