@@ -6,8 +6,7 @@
 #include <WS2812FX.h>           // https://github.com/kitesurfer1404/WS2812FX
 #include <ESPAsyncWebServer.h>  // https://github.com/me-no-dev/ESPAsyncWebServer
 #include <WiFi.h>
-// For OTA
-// #include <ESPmDNS.h>
+#include <ESPmDNS.h>
 #include <Update.h>
 
 /* Put your HOST SSID & Password */
@@ -20,7 +19,11 @@ IPAddress local_ip(172, 16, 1, 1);
 IPAddress gateway(172, 16, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
 
-AsyncWebServer httpServer(80);
+/* Put HTTP details */
+const uint8_t http_port = 80;
+
+AsyncWebServer httpServer(http_port);
+
 static const char htmlIndex[] PROGMEM = R"(<!DOCTYPE html>
 <html>
 <head>
@@ -145,6 +148,12 @@ void openAP() {
   WiFi.softAP(ssid, password);
 }
 
+void setupMDNS() {
+  MDNS.begin(hostname);
+  MDNS.addService("http", "tcp", http_port);
+  MDNS.addServiceTxt("_http", "_tcp", "board", "ESP32");
+}
+
 void openHttpServer() {
   // OTA
   setupOTA("/update");
@@ -212,7 +221,6 @@ void openHttpServer() {
     request->send(404, "text/plain", "Not found");
   });
   httpServer.begin();
-  // MDNS.addService("http", "tcp", 80);
   Serial.printf("HTTPServer Started: http://%s/update\n", WiFi.softAPIP().toString());
 }
 
@@ -375,6 +383,7 @@ void setup() {
   // WebServer
   openAP();
   openHttpServer();
+  setupMDNS();
 }
 
 void loop() {
