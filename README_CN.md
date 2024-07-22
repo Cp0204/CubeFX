@@ -2,11 +2,13 @@
 
 为你的 ZimaCube 注入多彩灯光！
 
-CubeFX 是一个为 ZimaCube 设计的**第三方**开源灯光控制系统，基于 ESP32-C3 和 WS2812B 灯带。它可以让你自定义灯光效果、颜色和速度，并通过 Web 页面或按键进行控制。
+CubeFX 是一个为 ZimaCube 设计的**第三方开源灯光控制系统**，基于 ESP32-C3 和 WS2812B 灯带。它可以让你自定义灯光效果、颜色和速度，并通过 Web 页面或按键进行控制。
 
 [![GitHub release](https://img.shields.io/github/v/release/Cp0204/CubeFX.svg)](https://github.com/Cp0204/CubeFX/releases/latest) [![GitHub license](https://img.shields.io/github/license/Cp0204/CubeFX.svg)](https://github.com/Cp0204/CubeFX/blob/main/LICENSE)
 
-[![Demo](https://img.youtube.com/vi/K5UVmzoG0bY/0.jpg)](https://www.youtube.com/watch?v=K5UVmzoG0bY)
+[![Demo](https://img.youtube.com/vi/K5UVmzoG0bY/mqdefault.jpg)](https://www.youtube.com/watch?v=K5UVmzoG0bY)
+
+[了解更多](https://icewhale.community/t/unleash-the-zimacube-introducing-cubefx-the-open-source-led-strip-firmware/3372)
 
 ## 特性
 
@@ -38,7 +40,10 @@ CubeFX 是一个为 ZimaCube 设计的**第三方**开源灯光控制系统，�
 
 连接热点打开 http://172.16.1.1/post
 
-或使用其它软件 POST 数据到 `http://172.16.1.1/post` ，数据格式如下：
+> [!TIP]
+> 建议用手机尽量靠近第七盘连接，因为它的信号相当弱。
+
+或使用其它程序 **POST** 数据到 `http://172.16.1.1/post` ，数据格式如下：
 
 ```json
 {

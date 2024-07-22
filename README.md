@@ -1,12 +1,14 @@
 # CubeFX
 
-Inject colorful lighting into your ZimaCube!
+Inject Colorful lighting into your ZimaCube!
 
-CubeFX is a **third-party** open-source lighting control system designed for the ZimaCube, based on the ESP32-C3 and WS2812B LED strips. It allows you to customize lighting effects, colors, and speed, and control them through a web page or buttons.
+CubeFX is a **third-party open-source lighting control system** designed for the ZimaCube, based on the ESP32-C3 and WS2812B LED strips. It allows you to customize lighting effects, colors, and speed, and control them through a web page or buttons.
 
 [![GitHub release](https://img.shields.io/github/v/release/Cp0204/CubeFX.svg)](https://github.com/Cp0204/CubeFX/releases/latest) [![GitHub license](https://img.shields.io/github/license/Cp0204/CubeFX.svg)](https://github.com/Cp0204/CubeFX/blob/main/LICENSE)
 
-[![Demo](https://img.youtube.com/vi/K5UVmzoG0bY/0.jpg)](https://www.youtube.com/watch?v=K5UVmzoG0bY)
+[![Demo](https://img.youtube.com/vi/K5UVmzoG0bY/mqdefault.jpg)](https://www.youtube.com/watch?v=K5UVmzoG0bY)
+
+[Learn more](https://icewhale.community/t/unleash-the-zimacube-introducing-cubefx-the-open-source-led-strip-firmware/3372)
 
 ## Features
 
@@ -38,7 +40,10 @@ CubeFX is a **third-party** open-source lighting control system designed for the
 
 Connect to the AP and open http://172.16.1.1/post
 
-Or use other software to POST data to `http://172.16.1.1/post` in the following format:
+> [!TIP]
+> It is recommended to use a cell phone to connect as close as possible to the 7th-Bay, because its signal is really weak.
+
+Or use other program to **POST** data to `http://172.16.1.1/post` in the following format:
 
 ```json
 {
