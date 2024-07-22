@@ -2,9 +2,9 @@
 
 #include <ArduinoJson.h>
 #include <EEPROM.h>
-#include <OneButton.h>  // https://github.com/mathertel/OneButton
-#include <WS2812FX.h>   // https://github.com/kitesurfer1404/WS2812FX
-#include <WebServer.h>
+#include <OneButton.h>          // https://github.com/mathertel/OneButton
+#include <WS2812FX.h>           // https://github.com/kitesurfer1404/WS2812FX
+#include <ESPAsyncWebServer.h>  // https://github.com/me-no-dev/ESPAsyncWebServer
 #include <WiFi.h>
 // For OTA
 // #include <ESPmDNS.h>
@@ -20,7 +20,7 @@ IPAddress local_ip(172, 16, 1, 1);
 IPAddress gateway(172, 16, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
 
-WebServer httpServer(80);
+AsyncWebServer httpServer(80);
 static const char htmlIndex[] PROGMEM = R"(<!DOCTYPE html>
 <html>
 <head>
@@ -149,43 +149,52 @@ void openHttpServer() {
   // OTA
   setupOTA("/update");
   // index
-  httpServer.on("/", HTTP_GET, []() {
-    httpServer.send(200, "text/html", htmlIndex);
+  httpServer.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/html", htmlIndex);
   });
   // light post
-  httpServer.on("/post", HTTP_POST, handleHttpPost);
+  httpServer.on(
+    "/post", HTTP_POST, [](AsyncWebServerRequest *request) {
+      //nothing and dont remove it
+    },
+    NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+      handleHttpPost(request, data);
+    });
   // handle preflight
-  httpServer.on("/post", HTTP_OPTIONS, [] {
-    httpServer.sendHeader("Access-Control-Allow-Origin", "*");
-    httpServer.sendHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-    httpServer.sendHeader("Access-Control-Allow-Headers", "*");
-    httpServer.send(204);
+  httpServer.on("/post", HTTP_OPTIONS, [](AsyncWebServerRequest *request) {
+    AsyncWebServerResponse *response = request->beginResponse(204);
+    response->addHeader("Access-Control-Allow-Origin", "*");
+    response->addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    response->addHeader("Access-Control-Allow-Headers", "*");
+    request->send(response);
   });
   // light show panel
-  httpServer.on("/post", HTTP_GET, []() {
-    httpServer.send(200, "text/html", htmlPanel);
+  httpServer.on("/post", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/html", htmlPanel);
   });
   // light get
-  httpServer.on("/get", HTTP_GET, handleHttpGet);
+  httpServer.on("/get", HTTP_GET, [](AsyncWebServerRequest *request) {
+    handleHttpGet(request);
+  });
   // version
-  httpServer.on("/version", HTTP_GET, [] {
-    httpServer.send(200, "application/json", "{\"version\":\"" + String(VERSION) + "\"}");
+  httpServer.on("/version", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "application/json", "{\"version\":\"" + String(VERSION) + "\"}");
   });
   // wifi off
-  httpServer.on("/wifi/off", [] {
-    httpServer.send(200, "text/plain", "Turning off WiFi... Press the redlight side Button or Re-insert to Reopen");
+  httpServer.on("/wifi/off", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/plain", "Turning off WiFi... Press the redlight side Button or Re-insert to Reopen");
     delay(1000);
     WiFi.disconnect();
     WiFi.mode(WIFI_OFF);
   });
   // light switch
-  httpServer.on("/light/switch", [] {
+  httpServer.on("/light/switch", HTTP_GET, [](AsyncWebServerRequest *request) {
     if (ws2812fx.isRunning()) {
-      httpServer.send(200, "text/plain", "Switch Light... Now OFF");
+      request->send(200, "text/plain", "Switch Light... Now OFF");
       isLightOn = false;
       ws2812fx.stop();
     } else {
-      httpServer.send(200, "text/plain", "Switch Light... Now ON");
+      request->send(200, "text/plain", "Switch Light... Now ON");
       isLightOn = true;
       ws2812fx.start();
     }
@@ -193,14 +202,14 @@ void openHttpServer() {
     EEPROM.commit();
   });
   // light mode
-  httpServer.on("/light/mode", [] {
+  httpServer.on("/light/mode", HTTP_GET, [](AsyncWebServerRequest *request) {
     effectId = effectId == 5 ? -71 : (effectId + 1);
     showEffect();
-    httpServer.send(200, "text/plain", "Light Next Mode... " + String(effectId) + ":" + ws2812fx.getModeName(ws2812fx.getMode()));
+    request->send(200, "text/plain", "Light Next Mode... " + String(effectId) + ":" + ws2812fx.getModeName(ws2812fx.getMode()));
   });
   // 404
-  httpServer.onNotFound([] {
-    httpServer.send(404, "text/plain", "Not found");
+  httpServer.onNotFound([](AsyncWebServerRequest *request) {
+    request->send(404, "text/plain", "Not found");
   });
   httpServer.begin();
   // MDNS.addService("http", "tcp", 80);
@@ -274,12 +283,13 @@ void showEffect() {
   }
 }
 
-void handleHttpPost() {
-  DeserializationError error = deserializeJson(doc, httpServer.arg("plain"));
+void handleHttpPost(AsyncWebServerRequest *request, uint8_t *data) {
+  String requestBody = (const char *)data;
+  DeserializationError error = deserializeJson(doc, requestBody);
   if (error) {
     Serial.print("Failed to parse JSON: ");
     Serial.println(error.c_str());
-    httpServer.send(400, "text/plain", "Bad Request");
+    request->send(400, "text/plain", "Bad Request");
   } else {
     isLightOn = doc.containsKey("on") ? (doc["on"] == 0 ? 0 : 1) : 1;
     effectId = doc.containsKey("id") ? doc["id"] : effectId;
@@ -293,14 +303,15 @@ void handleHttpPost() {
     }
     showEffect();
     saveToEEPROM();
-    httpServer.sendHeader("Access-Control-Allow-Origin", "*");
-    httpServer.sendHeader("Access-Control-Allow-Headers", "*");
-    httpServer.sendHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-    httpServer.send(200, "application/json", "{\"response\":\"Received\",\"id\":" + String(effectId) + "}");
+    AsyncWebServerResponse *response = request->beginResponse(200, "application/json", "{\"response\":\"Received\",\"id\":" + String(effectId) + "}");
+    response->addHeader("Access-Control-Allow-Origin", "*");
+    response->addHeader("Access-Control-Allow-Headers", "*");
+    response->addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    request->send(response);
   }
 }
 
-void handleHttpGet() {
+void handleHttpGet(AsyncWebServerRequest *request) {
   DynamicJsonDocument doc(1024);
   doc["on"] = isLightOn ? 1 : 0;
   doc["id"] = effectId;
@@ -318,10 +329,11 @@ void handleHttpGet() {
   }
   String jsonResponse;
   serializeJson(doc, jsonResponse);
-  httpServer.sendHeader("Access-Control-Allow-Origin", "*");
-  httpServer.sendHeader("Access-Control-Allow-Headers", "*");
-  httpServer.sendHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-  httpServer.send(200, "application/json", jsonResponse);
+  AsyncWebServerResponse *response = request->beginResponse(200, "application/json", jsonResponse);
+  response->addHeader("Access-Control-Allow-Origin", "*");
+  response->addHeader("Access-Control-Allow-Headers", "*");
+  response->addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+  request->send(response);
 }
 
 void handleBtnClick() {
@@ -366,7 +378,6 @@ void setup() {
 }
 
 void loop() {
-  httpServer.handleClient();
   ws2812fx.service();
   button.tick();
 }
@@ -376,8 +387,8 @@ void loop() {
 
 // 水滴效果，从中间扩散
 uint16_t waterDropEffect(void) {
-  WS2812FX::Segment* seg = ws2812fx.getSegment();
-  WS2812FX::Segment_runtime* segrt = ws2812fx.getSegmentRuntime();
+  WS2812FX::Segment *seg = ws2812fx.getSegment();
+  WS2812FX::Segment_runtime *segrt = ws2812fx.getSegmentRuntime();
   int seglen = seg->stop - seg->start + 1;
   int middle = seg->start + seglen / 2;
   uint16_t dest = segrt->counter_mode_step;
@@ -405,7 +416,7 @@ uint16_t waterDropEffect(void) {
 
 // 星空效果，随机闪烁，然后渐暗
 uint16_t starEffect(void) {
-  WS2812FX::Segment* seg = ws2812fx.getSegment();
+  WS2812FX::Segment *seg = ws2812fx.getSegment();
   int seglen = seg->stop - seg->start + 1;
   for (uint16_t i = seg->start; i <= seg->stop; i++) {
     if (ws2812fx.random8() == 0) {
@@ -422,7 +433,7 @@ uint16_t starEffect(void) {
 }
 
 uint16_t customShow(void) {
-  WS2812FX::Segment* seg = ws2812fx.getSegment();
+  WS2812FX::Segment *seg = ws2812fx.getSegment();
   for (uint16_t i = seg->start; i <= seg->stop; i++) {
     if (i < sizeof(colors)) {
       ws2812fx.setPixelColor(i, colors[i]);
@@ -435,47 +446,45 @@ uint16_t customShow(void) {
 // ==============================================================
 
 // OTA
-void setupOTA(const String& path) {
+void setupOTA(const String &path) {
   // handler for the /update form page
-  httpServer.on(path.c_str(), HTTP_GET, []() {
-    httpServer.send(200, F("text/html"), htmlUpdate);
+  httpServer.on(path.c_str(), HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, F("text/html"), htmlUpdate);
   });
   // handler for the /update form POST (once file upload finishes)
   httpServer.on(
     path.c_str(), HTTP_POST,
-    []() {
+    [](AsyncWebServerRequest *request) {
       if (Update.hasError()) {
-        httpServer.send(200, "text/plain", "FAIL");
+        request->send(200, "text/plain", "FAIL");
       } else {
-        httpServer.send(200, "text/html", "<META http-equiv=\"refresh\" content=\"5;URL=/\">Update SUCCESS! Rebooting...");
+        request->send(200, "text/html", "<META http-equiv=\"refresh\" content=\"5;URL=/\">Update SUCCESS! Rebooting...");
         delay(1000);
         ESP.restart();
       }
     },
-    []() {
-      HTTPUpload& upload = httpServer.upload();
-      if (upload.status == UPLOAD_FILE_START) {
+    [](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+      if (index == 0 && !final) {
         Serial.setDebugOutput(true);
-        Serial.printf("Update: %s\n", upload.filename.c_str());
+        Serial.printf("Update: %s\n", filename.c_str());
         uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
         if (!Update.begin(maxSketchSpace, U_FLASH)) {
           Update.printError(Serial);
         }
-      } else if (upload.status == UPLOAD_FILE_WRITE) {
+      }
+      if (len) {
         Serial.printf(".");
-        if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
+        if (Update.write(data, len) != len) {
           Update.printError(Serial);
         }
-      } else if (upload.status == UPLOAD_FILE_END) {
+      }
+      if (final) {
         if (Update.end(true)) {
-          Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
+          Serial.printf("Update Success: \nRebooting...\n");
         } else {
           Update.printError(Serial);
         }
         Serial.setDebugOutput(false);
-      } else if (upload.status == UPLOAD_FILE_ABORTED) {
-        Update.end();
-        Serial.println("Update was aborted");
       }
     });
 }
