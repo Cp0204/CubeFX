@@ -9,7 +9,7 @@ on:
       - main
     paths:
       - '**.ino'
-      # - '.github/workflows/**.yml'
+      - '.github/workflows/**.yml'
     tags:
       - 'v*'
   workflow_dispatch:
@@ -63,6 +63,9 @@ jobs:
       - name: Install Libraries
         run: |
           arduino-cli lib install "ArduinoJson" "OneButton" "WS2812FX"
+          # Enable use --git-url and --zip-file
+          export ARDUINO_LIBRARY_ENABLE_UNSAFE_INSTALL=true
+          arduino-cli lib install --git-url "https://github.com/me-no-dev/AsyncTCP.git" "https://github.com/me-no-dev/ESPAsyncWebServer.git"
 
       - name: Compile Sketch
         run: |
