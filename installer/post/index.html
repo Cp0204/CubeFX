@@ -23,7 +23,7 @@
     <p>speed:&nbsp;<input type="range" id="speedRng" min="0" max="255" value="150">&nbsp;<span id="speedVal">150</span></p>
     <p>lightness:&nbsp;<input type="range" id="lightRng" min="0" max="255" value="255">&nbsp;<span id="lightVal">255</span></p>
     <p>data:&nbsp;<span id="colorCtr"></span></p>
-    <button type="submit">Submit</button>
+    <button type="submit">Submit</button>&nbsp;<button type="button" id="btnRandom">Random</button>
   </form>
   <pre id="log"></pre>
   <i>Made with ❤️ by Cp0204</i>
@@ -32,6 +32,7 @@
       onCheck = document.getElementById('onCheck'),
       idSel = document.getElementById('idSel'),
       btnNext = document.getElementById('btnNext'),
+      btnRandom = document.getElementById('btnRandom'),
       speedRng = document.getElementById('speedRng'),
       speedVal = document.getElementById('speedVal'),
       lightRng = document.getElementById('lightRng'),
@@ -63,6 +64,17 @@
       form.dispatchEvent(new Event('submit'));
     });
 
+    btnRandom.addEventListener('click', () => {
+      getData('/light/random');
+    });
+
+    idSel.addEventListener('change', () => {
+      const colorPickers = document.querySelectorAll('.colorPicker');
+      for (let i = 1; i < colorPickers.length; i++) {
+        colorPickers[i].style.display = idSel.value != 5 ? 'none' : '';
+      }
+    });
+
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const data = {
@@ -83,7 +95,11 @@
     });
 
     window.addEventListener('load', () => {
-      fetch(apiServer + '/get')
+      getData('/get');
+    });
+
+    function getData(endpoint) {
+      fetch(apiServer + endpoint)
         .then(response => response.json())
         .then(data => {
           onCheck.checked = data.on === 1;
@@ -96,15 +112,13 @@
           for (let i = 0; i < data.data.length; i++) {
             colorPickers[i].value = '#' + data.data[i];
           }
-          log.textContent += '/get Success';
+          idSel.dispatchEvent(new Event('change'));
+          log.textContent += '\n' + endpoint + ' Success';
         })
         .catch(err => {
-          log.textContent += 'Error: ' + err;
-          form.querySelectorAll('button').forEach(button => {
-            button.disabled = true;
-          });
+          log.textContent += '\nError: ' + err;
         });
-    });
+    }
   </script>
 </body>
 

@@ -38,7 +38,7 @@ static const char htmlIndex[] PROGMEM = R"(<!DOCTYPE html>
 <li><a href='/post'>Light Panel</a></li>
 <li><a href='/get'>Light Status</a></li>
 <li><a href='/light/switch'>Light Switch</a></li>
-<li><a href='/light/demo'>Light NextDemo</a></li>
+<li><a href='/light/random'>Random Effect</a></li>
 <li><a href='/wifi/off'>WiFiAP TurnOff</a></li>
 <li><a href='/update'>Firmware Update</a></li>
 </ul>
@@ -63,17 +63,20 @@ Firmware: <input type='file' accept='.bin,.bin.gz' name='firmware'> <input type=
 static const char htmlPanel[] PROGMEM = R"(
 <!DOCTYPE html><html><head><title>CubeFX Panel</title><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1' /><style>.colorPicker{ height: 25px; width: 25px; margin: 2px; cursor: pointer;} </style>
 </head><body><h1>CubeFX Panel</h1><form id="ledForm"><p>on:&nbsp;<input type="checkbox" id="onCheck"></p><p>id:&nbsp;<select id="idSel"></select>&nbsp;<button type="button" id="btnNext">QuickNext</button></p>
-<p>speed:&nbsp;<input type="range" id="speedRng" min="0" max="255" value="150">&nbsp;<span id="speedVal">150</span></p><p>lightness:&nbsp;<input type="range" id="lightRng" min="0" max="255" value="255">&nbsp;<span id="lightVal">255</span></p>
-<p>data:&nbsp;<span id="colorCtr"></span></p><button type="submit">Submit</button></form><pre id="log"></pre><i>Made with ❤️ by Cp0204</i><script>const form=document.getElementById('ledForm'), onCheck=document.getElementById('onCheck'),
-idSel=document.getElementById('idSel'), btnNext=document.getElementById('btnNext'), speedRng=document.getElementById('speedRng'), speedVal=document.getElementById('speedVal'), lightRng=document.getElementById('lightRng'), lightVal=document.getElementById('lightVal'),
-colorCtr=document.getElementById('colorCtr'), log=document.getElementById('log'), apiServer='http://172.16.1.1'; for (let i=0; i < 13; i++){ const picker=document.createElement('input'); picker.type='color'; picker.classList.add('colorPicker'); picker.value='#FFFFFF';
+<p>speed:&nbsp;<input type="range" id="speedRng" min="0" max="255" value="150">&nbsp;<span id="speedVal">150</span></p><p>lightness:&nbsp;<input type="range" id="lightRng" min="0" max="255" value="255">&nbsp;
+<span id="lightVal">255</span></p><p>data:&nbsp;<span id="colorCtr"></span></p><button type="submit">Submit</button>&nbsp;<button type="button" id="btnRandom">Random</button></form><pre id="log"></pre><i>Made with ❤️ by Cp0204</i>
+<script>const form=document.getElementById('ledForm'), onCheck=document.getElementById('onCheck'), idSel=document.getElementById('idSel'), btnNext=document.getElementById('btnNext'), btnRandom=document.getElementById('btnRandom'),
+speedRng=document.getElementById('speedRng'), speedVal=document.getElementById('speedVal'), lightRng=document.getElementById('lightRng'), lightVal=document.getElementById('lightVal'), colorCtr=document.getElementById('colorCtr'),
+log=document.getElementById('log'), apiServer='http://172.16.1.1'; for (let i=0; i < 13; i++){ const picker=document.createElement('input'); picker.type='color'; picker.classList.add('colorPicker'); picker.value='#FFFFFF';
 colorCtr.appendChild(picker);} for (let i=5; i >=-71; i--){ const opt=document.createElement('option'); opt.text=i; opt.selected=i===5; idSel.appendChild(opt);} speedRng.addEventListener('input', ()=>speedVal.textContent=speedRng.value);
-lightRng.addEventListener('input', ()=>lightVal.textContent=lightRng.value); btnNext.addEventListener('click', ()=>{ let currentId=parseInt(idSel.value); idSel.value=currentId==5 ? -71 : currentId + 1; form.dispatchEvent(new Event('submit'));});
-form.addEventListener('submit', (event)=>{ event.preventDefault(); const data={ on: onCheck.checked ? 1 : 0, id: parseInt(idSel.value), speed: parseInt(speedRng.value), lightness: parseInt(lightRng.value),
-data: Array.from(document.querySelectorAll('.colorPicker')).map(picker=>picker.value.replace('#', ''))}; fetch(apiServer + '/post',{ method: 'POST', headers:{ 'Content-Type': 'application/json'},
-body: JSON.stringify(data)}) .then(response=>response.json()) .then(response=>log.textContent +="\n/post Success " + JSON.stringify(response)) .catch(err=>log.textContent +='\nError: ' + err);});
-window.addEventListener('load', ()=>{ fetch(apiServer + '/get') .then(response=>response.json()) .then(data=>{ onCheck.checked=data.on===1; idSel.value=data.id; speedRng.value=data.speed; speedVal.textContent=data.speed; lightRng.value=data.lightness;
-lightVal.textContent=data.lightness; const colorPickers=document.querySelectorAll('.colorPicker'); for (let i=0; i < data.data.length; i++){ colorPickers[i].value='#' + data.data[i];} log.textContent +='/get Success';}) .catch(err=>{ log.textContent +='Error: ' + err; form.querySelectorAll('button').forEach(button=>{ button.disabled=true;});});}); </script></body></html>
+lightRng.addEventListener('input', ()=>lightVal.textContent=lightRng.value); btnNext.addEventListener('click', ()=>{ let currentId=parseInt(idSel.value); idSel.value=currentId==5 ? -71 : currentId + 1;
+form.dispatchEvent(new Event('submit'));}); btnRandom.addEventListener('click', ()=>{ getData('/light/random');}); idSel.addEventListener('change', ()=>{ const colorPickers=document.querySelectorAll('.colorPicker');
+for (let i=1; i < colorPickers.length; i++){ colorPickers[i].style.display=idSel.value !=5 ? 'none' : '';}}); form.addEventListener('submit', (event)=>{ event.preventDefault(); const data={ on: onCheck.checked ? 1 : 0,
+id: parseInt(idSel.value), speed: parseInt(speedRng.value), lightness: parseInt(lightRng.value), data: Array.from(document.querySelectorAll('.colorPicker')).map(picker=>picker.value.replace('#', ''))};
+fetch(apiServer + '/post',{ method: 'POST', headers:{ 'Content-Type': 'application/json'}, body: JSON.stringify(data)}) .then(response=>response.json()) .then(response=>log.textContent +="\n/post Success " + JSON.stringify(response)) .catch(err=>log.textContent +='\nError: ' + err);});
+window.addEventListener('load', ()=>{ getData('/get');}); function getData(endpoint){ fetch(apiServer + endpoint) .then(response=>response.json()) .then(data=>{ onCheck.checked=data.on===1; idSel.value=data.id;
+speedRng.value=data.speed; speedVal.textContent=data.speed; lightRng.value=data.lightness; lightVal.textContent=data.lightness; const colorPickers=document.querySelectorAll('.colorPicker');
+for (let i=0; i < data.data.length; i++){ colorPickers[i].value='#' + data.data[i];} idSel.dispatchEvent(new Event('change')); log.textContent +='\n' + endpoint + ' Success';}) .catch(err=>{ log.textContent +='\nError: ' + err;});} </script></body></html>
 )";
 
 DynamicJsonDocument doc(1024);
@@ -209,11 +212,10 @@ void openHttpServer() {
     EEPROM.put(EEPROM_ADDR_IS_LIGHT_ON, isLightOn);
     EEPROM.commit();
   });
-  // light demo
-  httpServer.on("/light/demo", HTTP_GET, [](AsyncWebServerRequest *request) {
-    effectId = effectId == 5 ? -71 : (effectId + 1);
-    showEffect();
-    request->send(200, "application/json", "{\"action\":\"" + request->url() + "\",\"message\":\"Quick Next Demo... " + String(effectId) + ":" + ws2812fx.getModeName(ws2812fx.getMode()) + "\"}");
+  // random effect
+  httpServer.on("/light/random", HTTP_GET, [](AsyncWebServerRequest *request) {
+    randomEffect();
+    handleHttpGet(request);
   });
   // 404
   httpServer.onNotFound([](AsyncWebServerRequest *request) {
@@ -347,7 +349,18 @@ void handleBtnClick() {
   digitalWrite(BOARD_LED, LOW);
   delay(50);
   digitalWrite(BOARD_LED, HIGH);
-  openAP();
+  randomEffect();
+}
+
+void randomEffect() {
+  effectId = random(-71, 6);
+  effectSpeed = random(50, 201);
+  lightness = random(50, 201);
+  for (int i = 0; i < NUM_PIXELS; i++) {
+    colors[i] = ws2812fx.color_wheel(ws2812fx.random8());
+  }
+  showEffect();
+  saveToEEPROM();
 }
 
 // ==============================================================
