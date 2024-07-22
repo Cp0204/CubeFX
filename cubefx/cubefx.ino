@@ -191,7 +191,7 @@ void openHttpServer() {
   });
   // wifi off
   httpServer.on("/wifi/off", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/plain", "Turning off WiFi... Press the redlight side Button or Re-insert to Reopen");
+    request->send(200, "text/plain", "Turning off WiFi... Re-insert the 7th-Bay to Reopen");
     delay(1000);
     WiFi.disconnect();
     WiFi.mode(WIFI_OFF);
@@ -221,7 +221,7 @@ void openHttpServer() {
     request->send(404, "text/plain", "Not found");
   });
   httpServer.begin();
-  Serial.printf("HTTPServer Started: http://%s/update\n", WiFi.softAPIP().toString());
+  Serial.printf("HTTPServer Started: http://%s:%u\n", WiFi.softAPIP().toString(), http_port);
 }
 
 // 颜色兼容 rgb hsv hex 输入
@@ -297,7 +297,7 @@ void handleHttpPost(AsyncWebServerRequest *request, uint8_t *data) {
   if (error) {
     Serial.print("Failed to parse JSON: ");
     Serial.println(error.c_str());
-    request->send(400, "text/plain", "Bad Request");
+    request->send(400, "text/json", "{\"response\":\"Bad Request\"}");
   } else {
     isLightOn = doc.containsKey("on") ? (doc["on"] == 0 ? 0 : 1) : 1;
     effectId = doc.containsKey("id") ? doc["id"] : effectId;
