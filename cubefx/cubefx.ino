@@ -11,9 +11,9 @@
 #include <Update.h>
 
 /* Put your HOST SSID & Password */
-const char* host = "CubeFX";
-const char* ssid = "ZimaCube";       // Enter SSID here
-const char* password = "homecloud";  // Enter Password here
+const char *hostname = "CubeFX";
+const char *ssid = "ZimaCube";       // Enter SSID here
+const char *password = "homecloud";  // Enter Password here
 
 /* Put IP Address details */
 IPAddress local_ip(172, 16, 1, 1);
@@ -140,6 +140,7 @@ void saveToEEPROM() {
 }
 
 void openAP() {
+  WiFi.setHostname(hostname);
   WiFi.softAPConfig(local_ip, gateway, subnet);
   WiFi.softAP(ssid, password);
 }
