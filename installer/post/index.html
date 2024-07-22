@@ -96,9 +96,14 @@
           for (let i = 0; i < data.data.length; i++) {
             colorPickers[i].value = '#' + data.data[i];
           }
-          log.textContent += '\n/get Success';
+          log.textContent += '/get Success';
         })
-        .catch(err => log.textContent += '\nError: ' + err);
+        .catch(err => {
+          log.textContent += 'Error: ' + err;
+          form.querySelectorAll('button').forEach(button => {
+            button.disabled = true;
+          });
+        });
     });
   </script>
 </body>

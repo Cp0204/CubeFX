@@ -73,7 +73,7 @@ form.addEventListener('submit', (event)=>{ event.preventDefault(); const data={ 
 data: Array.from(document.querySelectorAll('.colorPicker')).map(picker=>picker.value.replace('#', ''))}; fetch(apiServer + '/post',{ method: 'POST', headers:{ 'Content-Type': 'application/json'},
 body: JSON.stringify(data)}) .then(response=>response.json()) .then(response=>log.textContent +="\n/post Success " + JSON.stringify(response)) .catch(err=>log.textContent +='\nError: ' + err);});
 window.addEventListener('load', ()=>{ fetch(apiServer + '/get') .then(response=>response.json()) .then(data=>{ onCheck.checked=data.on===1; idSel.value=data.id; speedRng.value=data.speed; speedVal.textContent=data.speed; lightRng.value=data.lightness;
-lightVal.textContent=data.lightness; const colorPickers=document.querySelectorAll('.colorPicker'); for (let i=0; i < data.data.length; i++){ colorPickers[i].value='#' + data.data[i];} log.textContent +='\n/get Success';}) .catch(err=>log.textContent +='\nError: ' + err);}); </script></body></html>
+lightVal.textContent=data.lightness; const colorPickers=document.querySelectorAll('.colorPicker'); for (let i=0; i < data.data.length; i++){ colorPickers[i].value='#' + data.data[i];} log.textContent +='/get Success';}) .catch(err=>{ log.textContent +='Error: ' + err; form.querySelectorAll('button').forEach(button=>{ button.disabled=true;});});}); </script></body></html>
 )";
 
 DynamicJsonDocument doc(1024);
