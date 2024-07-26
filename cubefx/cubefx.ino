@@ -180,11 +180,7 @@ void openHttpServer() {
     });
   // handle preflight
   httpServer.on("/post", HTTP_OPTIONS, [](AsyncWebServerRequest *request) {
-    AsyncWebServerResponse *response = request->beginResponse(204);
-    response->addHeader("Access-Control-Allow-Origin", "*");
-    response->addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-    response->addHeader("Access-Control-Allow-Headers", "*");
-    request->send(response);
+    request->send(204);
   });
   // light show panel
   httpServer.on("/post", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -227,6 +223,10 @@ void openHttpServer() {
   httpServer.onNotFound([](AsyncWebServerRequest *request) {
     request->send(404, "text/plain", "Not found");
   });
+  DefaultHeaders::Instance().addHeader("Server", "CubeFX");
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "*");
   httpServer.begin();
   Serial.printf("HTTPServer Started: http://%s:%u\n", WiFi.softAPIP().toString(), http_port);
 }
@@ -318,11 +318,7 @@ void handleHttpPost(AsyncWebServerRequest *request, uint8_t *data) {
     }
     showEffect();
     saveToEEPROM();
-    AsyncWebServerResponse *response = request->beginResponse(200, "application/json", "{\"response\":\"Received\",\"id\":" + String(effectId) + "}");
-    response->addHeader("Access-Control-Allow-Origin", "*");
-    response->addHeader("Access-Control-Allow-Headers", "*");
-    response->addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-    request->send(response);
+    request->send(200, "application/json", "{\"response\":\"Received\",\"id\":" + String(effectId) + "}");
   }
 }
 
@@ -344,11 +340,7 @@ void handleHttpGet(AsyncWebServerRequest *request) {
   }
   String jsonResponse;
   serializeJson(doc, jsonResponse);
-  AsyncWebServerResponse *response = request->beginResponse(200, "application/json", jsonResponse);
-  response->addHeader("Access-Control-Allow-Origin", "*");
-  response->addHeader("Access-Control-Allow-Headers", "*");
-  response->addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-  request->send(response);
+  request->send(200, "application/json", jsonResponse);
 }
 
 void handleBtnClick() {
