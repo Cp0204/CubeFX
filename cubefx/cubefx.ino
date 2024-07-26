@@ -151,6 +151,12 @@ void openAP() {
   WiFi.softAP(ssid, password);
 }
 
+void closeAP() {
+  WiFi.softAPdisconnect(true);
+  WiFi.mode(WIFI_OFF);
+  Serial.println("Closed AP");
+}
+
 void setupMDNS() {
   MDNS.begin(hostname);
   MDNS.addService("http", "tcp", http_port);
@@ -195,9 +201,9 @@ void openHttpServer() {
   // wifi off
   httpServer.on("/wifi/off", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "application/json", "{\"action\":\"" + request->url() + "\",\"message\":\"Turning off WiFi... Re-insert the 7th-Bay to Reopen\"}");
-    delay(1000);
-    WiFi.disconnect();
-    WiFi.mode(WIFI_OFF);
+    request->client()->onAck([request](void *arg, AsyncClient *client, size_t len, uint32_t time) {
+      closeAP();
+    });
   });
   // light switch
   httpServer.on("/light/switch", HTTP_GET, [](AsyncWebServerRequest *request) {
