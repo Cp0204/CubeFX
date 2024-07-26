@@ -147,14 +147,23 @@ void saveToEEPROM() {
 
 void openAP() {
   WiFi.setHostname(hostname);
+  WiFi.mode(WIFI_AP);
   WiFi.softAPConfig(local_ip, gateway, subnet);
   WiFi.softAP(ssid, password);
+  // Print AP Info
+  Serial.println("-- Open AP --");
+  // Serial.printf("ssid: %s\n", ssid);
+  // Serial.printf("password: %s\n", password);
+  // Serial.printf("local_ip: %s\n", WiFi.softAPIP().toString());
+  // Serial.printf("subnet: %s\n", subnet.toString());
+  // Serial.printf("gateway: %s\n", gateway.toString());
+  // Serial.println("");
 }
 
 void closeAP() {
   WiFi.softAPdisconnect(true);
   WiFi.mode(WIFI_OFF);
-  Serial.println("Closed AP");
+  Serial.println("-- Close AP --");
 }
 
 void setupMDNS() {
@@ -369,8 +378,7 @@ void setup() {
   digitalWrite(BOARD_LED, HIGH);
   // Output startup parameter
   Serial.begin(15200);
-  Serial.println("Initial CubeFX");
-  Serial.println("==============================");
+  Serial.println("== Initial CubeFX ==");
   loadFromEEPROM();
   Serial.printf("isLightOn: %d\n", isLightOn);
   Serial.printf("effectId: %d\n", effectId);
@@ -380,7 +388,7 @@ void setup() {
   for (int i = 0; i < NUM_PIXELS; i++) {
     Serial.printf("%06X%s", colors[i], (i < NUM_PIXELS - 1) ? ", " : "\n");
   }
-  Serial.println("==============================");
+  Serial.println("");
   // WS2812FX
   ws2812fx.init();
   // 自定义效果，从 0:72 开始注册
