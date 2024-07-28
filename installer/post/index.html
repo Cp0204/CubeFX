@@ -39,7 +39,7 @@
       lightVal = document.getElementById('lightVal'),
       colorCtr = document.getElementById('colorCtr'),
       log = document.getElementById('log'),
-      apiServer = 'http://172.16.1.1';
+      apiServer = window.location.hostname.includes("cubefx") ? '.' : 'http://172.16.1.1';
 
     for (let i = 0; i < 13; i++) {
       const picker = document.createElement('input');
@@ -113,6 +113,7 @@
             colorPickers[i].value = '#' + data.data[i];
           }
           idSel.dispatchEvent(new Event('change'));
+          log.textContent += '\nConnected to: ' + apiServer;
           log.textContent += '\n' + endpoint + ' Success';
         })
         .catch(err => {
