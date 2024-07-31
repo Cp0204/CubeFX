@@ -1,0 +1,17 @@
+{
+  "name": "zimacube_original_firmware",
+  "version": "v0.5",
+  "funding_url": "https://buymeacoffee.com/cp0204",
+  "new_install_prompt_erase": false,
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        {
+          "path": "../firmware/zimacube_original_firmware.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}
