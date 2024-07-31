@@ -89,6 +89,8 @@ jobs:
           # Create release binary
           cp build/cubefx.bin "CubeFX_flash_${{ steps.get_ver.outputs.ver }}.bin"
           cp build/cubefx.ino.bin "CubeFX_ota_${{ steps.get_ver.outputs.ver }}.bin"
+          # Create installer binary
+          cp build/cubefx.bin "installer/firmware/cubefx.bin"
           # Delete intermediate files
           find ./build -type f ! -name "*.bin" -delete
 
@@ -119,6 +121,4 @@ jobs:
           endpoint: ${{ secrets.OSS_ENDPOINT }}
           bucket: ${{ secrets.OSS_BUCKET }}
           assets: |
-            build/cubefx.bin:cubefx/firmware/cubefx.bin
-            installer/index.html:cubefx/index.html
-            installer/manifest/**:cubefx/manifest/
+            installer/**:cubefx/
